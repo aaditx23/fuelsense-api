@@ -1,2 +1,8 @@
 docs
 node_modules
+package-lock.json
+.env.local
+.env
+
+/generated/prisma
+dist
