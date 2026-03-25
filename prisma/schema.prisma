@@ -1,13 +1,100 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum FuelType {
+  PETROL
+  DIESEL
+  OCTANE
+}
+
+model User {
+  id            Int          @id @default(autoincrement())
+  username      String       @unique
+  email         String       @unique
+  passwordHash  String       @map("password_hash")
+  role          UserRole     @default(USER)
+  profileImage  String?      @map("profile_image")
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
+  userBikes     UserBike[]
+  submittedBikes Bike[]      @relation("SubmittedBikes")
+  fuelRecords   FuelRecord[]
+
+  @@map("users")
+}
+
+model Bike {
+  id               Int          @id @default(autoincrement())
+  brand            String
+  model            String
+  engineCc         Int          @map("engine_cc")
+  modelYear        Int          @map("model_year")
+  fuelType         FuelType     @map("fuel_type")
+  expectedMileage  Float        @map("expected_mileage")
+  tankCapacity     Float        @map("tank_capacity")
+  reserveCapacity  Float?       @map("reserve_capacity")
+  image            String?
+  isActive         Boolean      @default(false) @map("is_active")
+  submittedById    Int?         @map("submitted_by")
+  adminNote        String?      @map("admin_note")
+  createdAt        DateTime     @default(now()) @map("created_at")
+  updatedAt        DateTime     @updatedAt @map("updated_at")
+  submitter        User?        @relation("SubmittedBikes", fields: [submittedById], references: [id], onDelete: SetNull)
+  userBikes        UserBike[]
+
+  @@unique([brand, model, engineCc, modelYear], map: "uq_bike_variant")
+  @@map("bikes")
+}
+
+model UserBike {
+  id          Int          @id @default(autoincrement())
+  userId      Int          @map("user_id")
+  bikeId      Int          @map("bike_id")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bike        Bike         @relation(fields: [bikeId], references: [id], onDelete: Cascade)
+  fuelRecords FuelRecord[]
+
+  @@unique([userId, bikeId], map: "uq_user_bike")
+  @@map("user_bikes")
+}
+
+model FuelRecord {
+  id                 Int       @id @default(autoincrement())
+  userId             Int       @map("user_id")
+  userBikeId         Int       @map("user_bike_id")
+  odometerReading    Float?    @map("odometer_reading")
+  tripMeterReading   Float?    @map("trip_meter_reading")
+  tripMeterAtReserve Float?    @map("trip_meter_at_reserve")
+  odometerAtReserve  Float?    @map("odometer_at_reserve")
+  fuelLiter          Float?    @map("fuel_liter")
+  fuelPrice          Float?    @map("fuel_price")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userBike           UserBike  @relation(fields: [userBikeId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userBikeId])
+  @@map("fuel_records")
+}
+
+model FuelPrice {
+  id        Int       @id @default(autoincrement())
+  date      DateTime  @unique
+  diesel    Float?
+  petrol    Float?
+  octane    Float?
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  @@map("fuel_prices")
 }
