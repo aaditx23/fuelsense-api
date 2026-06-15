@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
+import * as https from 'https';
 
 export type ScrapedFuelPrice = {
   diesel: number | null;
@@ -17,6 +18,7 @@ export class FuelPriceScraperService {
     const response = await axios.get(this.targetUrl, {
       timeout: 15000,
       validateStatus: (status) => status >= 200 && status < 400,
+      httpsAgent: new https.Agent({ rejectUnauthorized: false }),
     });
 
     const $ = cheerio.load(response.data);
@@ -52,8 +54,27 @@ export class FuelPriceScraperService {
     };
   }
 
+  private convertBengaliToEnglish(text: string): string {
+    return text.replace(/[০-৯]/g, (d) => {
+      const mapping: Record<string, string> = {
+        '০': '0',
+        '১': '1',
+        '২': '2',
+        '৩': '3',
+        '৪': '4',
+        '৫': '5',
+        '৬': '6',
+        '৭': '7',
+        '৮': '8',
+        '৯': '9',
+      };
+      return mapping[d] || d;
+    });
+  }
+
   private extractPrice(text: string): number | null {
-    const normalized = text
+    const englishText = this.convertBengaliToEnglish(text);
+    const normalized = englishText
       .replace(/\(tk\/?lit(re|er)?\)/gi, ' ')
       .replace(/tk|৳|টাকা|লিটার/gi, ' ');
 
