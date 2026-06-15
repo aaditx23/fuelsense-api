@@ -16,6 +16,19 @@ export class ManualFuelUpdateUseCase {
   ) {}
 
   async execute(): Promise<UnifiedResponse<FuelPriceResponseDto>> {
+    const latest = await this.fuelPriceRepository.findLatest();
+
+    if (latest) {
+      const timeSinceLastUpdate = Date.now() - new Date(latest.createdAt).getTime();
+      const sixHoursInMs = 6 * 60 * 60 * 1000;
+      if (timeSinceLastUpdate < sixHoursInMs) {
+        return ok({
+          message: 'Fuel price fetched from cache (last updated less than 6 hours ago)',
+          data: FuelPriceResponseDto.fromEntity(latest),
+        });
+      }
+    }
+
     const scraped = await this.fuelPriceScraper.scrape();
 
     if (

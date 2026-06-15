@@ -99,4 +99,57 @@ describe('ManualFuelUpdateUseCase', () => {
     expect(result.message).toBe('Fuel price updated successfully');
     expect(result.data?.petrol).toBe(131);
   });
+
+  it('skips scraping and returns cached price when updated less than 6 hours ago', async () => {
+    const cachedRecord = {
+      id: 5,
+      date: new Date(),
+      diesel: 110,
+      petrol: 130,
+      octane: 140,
+      createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+    };
+
+    repositoryMock.findLatest.mockResolvedValue(cachedRecord);
+
+    const result = await useCase.execute();
+
+    expect(result.message).toBe('Fuel price fetched from cache (last updated less than 6 hours ago)');
+    expect(result.data?.id).toBe(5);
+    expect(scraperMock.scrape).not.toHaveBeenCalled();
+  });
+
+  it('proceeds with scraping when last update was more than 6 hours ago', async () => {
+    const cachedRecord = {
+      id: 5,
+      date: new Date(),
+      diesel: 110,
+      petrol: 130,
+      octane: 140,
+      createdAt: new Date(Date.now() - 7 * 60 * 60 * 1000), // 7 hours ago
+    };
+
+    repositoryMock.findLatest.mockResolvedValue(cachedRecord);
+    scraperMock.scrape.mockResolvedValue({
+      diesel: 112,
+      petrol: 132,
+      octane: 142,
+    });
+    repositoryMock.saveIfChanged.mockResolvedValue({
+      inserted: true,
+      record: {
+        id: 6,
+        date: new Date(),
+        diesel: 112,
+        petrol: 132,
+        octane: 142,
+        createdAt: new Date(),
+      },
+    });
+
+    const result = await useCase.execute();
+
+    expect(result.message).toBe('Fuel price updated successfully');
+    expect(scraperMock.scrape).toHaveBeenCalled();
+  });
 });

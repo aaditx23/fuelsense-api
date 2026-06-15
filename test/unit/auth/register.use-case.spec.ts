@@ -122,7 +122,7 @@ describe('RegisterUseCase', () => {
       username: 'amir',
       email: 'amir@example.com',
       passwordHash: 'hashed_password',
-      role: undefined,
+      role: 'USER',
       profileImage: undefined,
     });
     expect(tokenServiceMock.sign).toHaveBeenCalledWith({
