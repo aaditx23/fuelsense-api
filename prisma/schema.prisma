@@ -18,17 +18,18 @@ enum FuelType {
 }
 
 model User {
-  id            Int          @id @default(autoincrement())
-  username      String       @unique
-  email         String       @unique
-  passwordHash  String       @map("password_hash")
-  role          UserRole     @default(USER)
-  profileImage  String?      @map("profile_image")
-  createdAt     DateTime     @default(now()) @map("created_at")
-  updatedAt     DateTime     @updatedAt @map("updated_at")
-  userBikes     UserBike[]
-  submittedBikes Bike[]      @relation("SubmittedBikes")
-  fuelRecords   FuelRecord[]
+  id                 Int                 @id @default(autoincrement())
+  username           String              @unique
+  email              String              @unique
+  passwordHash       String              @map("password_hash")
+  role               UserRole            @default(USER)
+  profileImage       String?             @map("profile_image")
+  createdAt          DateTime            @default(now()) @map("created_at")
+  updatedAt          DateTime            @updatedAt @map("updated_at")
+  userBikes          UserBike[]
+  submittedBikes     Bike[]              @relation("SubmittedBikes")
+  fuelRecords        FuelRecord[]
+  maintenanceRecords MaintenanceRecord[]
 
   @@map("users")
 }
@@ -57,13 +58,14 @@ model Bike {
 }
 
 model UserBike {
-  id          Int          @id @default(autoincrement())
-  userId      Int          @map("user_id")
-  bikeId      Int          @map("bike_id")
-  createdAt   DateTime     @default(now()) @map("created_at")
-  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  bike        Bike         @relation(fields: [bikeId], references: [id], onDelete: Cascade)
-  fuelRecords FuelRecord[]
+  id                 Int                 @id @default(autoincrement())
+  userId             Int                 @map("user_id")
+  bikeId             Int                 @map("bike_id")
+  createdAt          DateTime            @default(now()) @map("created_at")
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bike               Bike                @relation(fields: [bikeId], references: [id], onDelete: Cascade)
+  fuelRecords        FuelRecord[]
+  maintenanceRecords MaintenanceRecord[]
 
   @@unique([userId, bikeId], map: "uq_user_bike")
   @@map("user_bikes")
@@ -97,4 +99,34 @@ model FuelPrice {
   createdAt DateTime  @default(now()) @map("created_at")
 
   @@map("fuel_prices")
+}
+
+model MaintenanceRecord {
+  id              Int      @id @default(autoincrement())
+  userId          Int      @map("user_id")
+  userBikeId      Int      @map("user_bike_id")
+  odometerReading Float    @map("odometer_reading")
+  category        String   @map("category")
+  description     String?  @map("description")
+  partsCost       Float    @default(0) @map("parts_cost")
+  laborCost       Float    @default(0) @map("labor_cost")
+  partsBrand      String?  @map("parts_brand")
+  serviceDate     DateTime @default(now()) @map("service_date")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userBike UserBike @relation(fields: [userBikeId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userBikeId])
+  @@map("maintenance_records")
+}
+
+model Part {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("parts")
 }

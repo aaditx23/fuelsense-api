@@ -11,29 +11,47 @@ export class PrismaRefuelRepository implements RefuelRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async isUserBikeOwnedByUser(userId: number, userBikeId: number): Promise<boolean> {
-    const userBike = await this.prisma.userBike.findFirst({
+    const userBike = await this.prisma.userBike.findUnique({
       where: {
-        id: userBikeId,
-        userId,
+        userId_bikeId: {
+          userId,
+          bikeId: userBikeId,
+        },
       },
     });
 
     return !!userBike;
   }
 
-  async countByUserBike(userBikeId: number): Promise<number> {
+  async countByUserBike(userId: number, userBikeId: number): Promise<number> {
     return this.prisma.fuelRecord.count({
       where: {
-        userBikeId,
+        userId,
+        userBike: {
+          bikeId: userBikeId,
+        },
       },
     });
   }
 
   async createRefuelRecord(input: CreateRefuelInput): Promise<RefuelRecordEntity> {
+    const userBike = await this.prisma.userBike.findUnique({
+      where: {
+        userId_bikeId: {
+          userId: input.userId,
+          bikeId: input.userBikeId,
+        },
+      },
+    });
+
+    if (!userBike) {
+      throw new Error('UserBike association not found');
+    }
+
     const record = await this.prisma.fuelRecord.create({
       data: {
         userId: input.userId,
-        userBikeId: input.userBikeId,
+        userBikeId: userBike.id,
         odometerReading: input.odometerReading ?? null,
         tripMeterReading: input.tripMeterReading ?? null,
         tripMeterAtReserve: input.tripMeterAtReserve ?? null,
@@ -43,7 +61,10 @@ export class PrismaRefuelRepository implements RefuelRepository {
       },
     });
 
-    return record;
+    return {
+      ...record,
+      userBikeId: input.userBikeId,
+    };
   }
 
   async getUserRefuelRecords(userId: number): Promise<RefuelRecordEntity[]> {
@@ -51,11 +72,17 @@ export class PrismaRefuelRepository implements RefuelRepository {
       where: {
         userId,
       },
+      include: {
+        userBike: true,
+      },
       orderBy: {
         createdAt: 'desc',
       },
     });
 
-    return rows;
+    return rows.map((row) => ({
+      ...row,
+      userBikeId: row.userBike.bikeId,
+    }));
   }
 }

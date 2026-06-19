@@ -15,7 +15,7 @@ export type CreateRefuelInput = {
 
 export interface RefuelRepository {
   isUserBikeOwnedByUser(userId: number, userBikeId: number): Promise<boolean>;
-  countByUserBike(userBikeId: number): Promise<number>;
+  countByUserBike(userId: number, userBikeId: number): Promise<number>;
   createRefuelRecord(input: CreateRefuelInput): Promise<RefuelRecordEntity>;
   getUserRefuelRecords(userId: number): Promise<RefuelRecordEntity[]>;
 }

@@ -31,7 +31,7 @@ export class CreateRefuelRecordUseCase {
       throw new ForbiddenException('You do not own this user bike');
     }
 
-    const refuelCount = await this.refuelRepository.countByUserBike(input.userBikeId);
+    const refuelCount = await this.refuelRepository.countByUserBike(userId, input.userBikeId);
     const isFirstRefuel = refuelCount === 0;
 
     if (isFirstRefuel && input.odometerReading == null) {

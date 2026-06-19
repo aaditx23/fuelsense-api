@@ -8,6 +8,10 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors();
+  app.use((req: any, res: any, next: any) => {
+    console.log(`[HTTP] ${req.method} ${req.url} - IP: ${req.ip}`);
+    next();
+  });
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
