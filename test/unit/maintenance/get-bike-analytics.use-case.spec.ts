@@ -13,6 +13,7 @@ describe('GetBikeAnalyticsUseCase', () => {
     getBikeModelMaintenanceLogs: jest.fn(),
     getBikeModelUserBikes: jest.fn(),
     getBikeModelFuelRecords: jest.fn(),
+    getRegisteredParts: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -67,6 +68,8 @@ describe('GetBikeAnalyticsUseCase', () => {
         description: 'First oil change',
         partsCost: 500,
         laborCost: 100,
+        partsBrand: null,
+        serviceDate: new Date(),
         createdAt: new Date(),
         updatedAt: new Date(),
       },
@@ -79,6 +82,8 @@ describe('GetBikeAnalyticsUseCase', () => {
         description: 'Second oil change',
         partsCost: 500,
         laborCost: 100,
+        partsBrand: null,
+        serviceDate: new Date(),
         createdAt: new Date(),
         updatedAt: new Date(),
       },
@@ -92,6 +97,8 @@ describe('GetBikeAnalyticsUseCase', () => {
         description: 'Brake pads replacement',
         partsCost: 800,
         laborCost: 200,
+        partsBrand: null,
+        serviceDate: new Date(),
         createdAt: new Date(),
         updatedAt: new Date(),
       },
@@ -104,6 +111,8 @@ describe('GetBikeAnalyticsUseCase', () => {
         description: 'Electrical fix (Unscheduled)',
         partsCost: 1800,
         laborCost: 200,
+        partsBrand: null,
+        serviceDate: new Date(),
         createdAt: new Date(),
         updatedAt: new Date(),
       },
