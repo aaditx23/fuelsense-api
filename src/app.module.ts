@@ -9,6 +9,7 @@ import { RefuelModule } from './modules/refuel/refuel.module';
 import { PrismaModule } from './modules/shared/infrastructure/prisma/prisma.module';
 import { UserModule } from './modules/user/user.module';
 import { MaintenanceModule } from './modules/maintenance/maintenance.module';
+import { CommunityModule } from './modules/community/community.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { MaintenanceModule } from './modules/maintenance/maintenance.module';
     AdminModule,
     FuelPricesModule,
     MaintenanceModule,
+    CommunityModule,
   ],
   controllers: [HealthController],
   providers: [],
