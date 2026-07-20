@@ -21,15 +21,26 @@ export class FuelPriceScraperService {
       httpsAgent: new https.Agent({ rejectUnauthorized: false }),
     });
 
-    const $ = cheerio.load(response.data);
-    const rows = $('tr').toArray();
+    let html = response.data;
+    const $ = cheerio.load(html);
+    const renderer = $('rt-renderer');
+
+    if (renderer.length > 0) {
+      const base64Content = renderer.attr('encoded-content');
+      if (base64Content) {
+        html = Buffer.from(base64Content, 'base64').toString('utf8');
+      }
+    }
+
+    const $content = cheerio.load(html);
+    const rows = $content('tr').toArray();
 
     let diesel: number | null = null;
     let petrol: number | null = null;
     let octane: number | null = null;
 
     for (const row of rows) {
-      const text = $(row).text().replace(/\s+/g, ' ').trim();
+      const text = $content(row).text().replace(/\s+/g, ' ').trim();
       if (!text) {
         continue;
       }
