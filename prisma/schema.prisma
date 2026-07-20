@@ -91,13 +91,14 @@ model FuelRecord {
 }
 
 model FuelPrice {
-  id        Int       @id @default(autoincrement())
-  date      DateTime  @unique
-  diesel    Float?
-  petrol    Float?
-  octane    Float?
-  createdAt DateTime  @default(now()) @map("created_at")
+  id            Int      @id @default(autoincrement())
+  fuelType      FuelType @map("fuel_type")
+  price         Float
+  effectiveDate DateTime @map("effective_date")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
 
+  @@unique([fuelType, effectiveDate], map: "uq_fuel_type_effective_date")
   @@map("fuel_prices")
 }
 

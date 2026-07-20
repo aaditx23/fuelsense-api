@@ -1,21 +1,22 @@
 import { FuelPriceEntity } from '../../domain/entities/fuel-price.entity';
 
-export class FuelPriceResponseDto {
-  id!: number;
-  date!: Date;
-  diesel!: number | null;
-  petrol!: number | null;
-  octane!: number | null;
+export class FuelPriceDetailDto {
+  price!: number | null;
+  updatedAt!: Date;
+  effectiveFrom!: Date | null;
   createdAt!: Date;
+}
+
+export class FuelPriceResponseDto {
+  diesel!: FuelPriceDetailDto;
+  petrol!: FuelPriceDetailDto;
+  octane!: FuelPriceDetailDto;
 
   static fromEntity(entity: FuelPriceEntity): FuelPriceResponseDto {
     return {
-      id: entity.id,
-      date: entity.date,
       diesel: entity.diesel,
       petrol: entity.petrol,
       octane: entity.octane,
-      createdAt: entity.createdAt,
     };
   }
 }

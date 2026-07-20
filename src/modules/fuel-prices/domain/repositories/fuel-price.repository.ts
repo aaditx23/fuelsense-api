@@ -10,10 +10,9 @@ export interface FuelPriceRepository {
   findAll(): Promise<FuelPriceEntity[]>;
   getSummary(): Promise<FuelPriceSummary>;
   saveIfChanged(input: {
-    date: Date;
-    diesel: number | null;
-    petrol: number | null;
-    octane: number | null;
+    diesel: { price: number | null; effectiveDate: Date | null };
+    petrol: { price: number | null; effectiveDate: Date | null };
+    octane: { price: number | null; effectiveDate: Date | null };
   }): Promise<{
     record: FuelPriceEntity;
     inserted: boolean;

@@ -3,10 +3,15 @@ import axios from 'axios';
 import * as cheerio from 'cheerio';
 import * as https from 'https';
 
-export type ScrapedFuelPrice = {
-  diesel: number | null;
-  petrol: number | null;
-  octane: number | null;
+export type ScrapedFuelDetail = {
+  price: number | null;
+  effectiveDate: Date | null;
+};
+
+export type ScrapedFuelPriceResult = {
+  diesel: ScrapedFuelDetail;
+  petrol: ScrapedFuelDetail;
+  octane: ScrapedFuelDetail;
 };
 
 @Injectable()
@@ -14,7 +19,7 @@ export class FuelPriceScraperService {
   private readonly targetUrl =
     'https://bpc.gov.bd/pages/static-pages/6922ddb6933eb65569e15fbc';
 
-  async scrape(): Promise<ScrapedFuelPrice> {
+  async scrape(): Promise<ScrapedFuelPriceResult> {
     const response = await axios.get(this.targetUrl, {
       timeout: 15000,
       validateStatus: (status) => status >= 200 && status < 400,
@@ -35,9 +40,9 @@ export class FuelPriceScraperService {
     const $content = cheerio.load(html);
     const rows = $content('tr').toArray();
 
-    let diesel: number | null = null;
-    let petrol: number | null = null;
-    let octane: number | null = null;
+    let diesel: ScrapedFuelDetail = { price: null, effectiveDate: null };
+    let petrol: ScrapedFuelDetail = { price: null, effectiveDate: null };
+    let octane: ScrapedFuelDetail = { price: null, effectiveDate: null };
 
     for (const row of rows) {
       const text = $content(row).text().replace(/\s+/g, ' ').trim();
@@ -45,16 +50,25 @@ export class FuelPriceScraperService {
         continue;
       }
 
-      if (diesel == null && /hsd|diesel|ডিজেল/i.test(text)) {
-        diesel = this.extractPrice(text);
+      if (diesel.price == null && /hsd|diesel|ডিজেল/i.test(text)) {
+        diesel = {
+          price: this.extractPrice(text),
+          effectiveDate: this.extractDate(text),
+        };
       }
 
-      if (petrol == null && /ms|petrol|পেট্রোল/i.test(text)) {
-        petrol = this.extractPrice(text);
+      if (petrol.price == null && /ms|petrol|পেট্রোল/i.test(text)) {
+        petrol = {
+          price: this.extractPrice(text),
+          effectiveDate: this.extractDate(text),
+        };
       }
 
-      if (octane == null && /hobc|octane|অকটেন/i.test(text)) {
-        octane = this.extractPrice(text);
+      if (octane.price == null && /hobc|octane|অকটেন/i.test(text)) {
+        octane = {
+          price: this.extractPrice(text),
+          effectiveDate: this.extractDate(text),
+        };
       }
     }
 
@@ -98,6 +112,18 @@ export class FuelPriceScraperService {
       }
     }
 
+    return null;
+  }
+
+  private extractDate(text: string): Date | null {
+    const englishText = this.convertBengaliToEnglish(text);
+    const dateMatch = englishText.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+    if (dateMatch) {
+      const day = parseInt(dateMatch[1], 10);
+      const month = parseInt(dateMatch[2], 10) - 1;
+      const year = parseInt(dateMatch[3], 10);
+      return new Date(Date.UTC(year, month, day));
+    }
     return null;
   }
 }

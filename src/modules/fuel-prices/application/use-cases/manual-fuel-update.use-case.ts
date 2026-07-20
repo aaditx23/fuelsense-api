@@ -14,12 +14,15 @@ export class ManualFuelUpdateUseCase {
     private readonly fuelPriceRepository: FuelPriceRepository,
     private readonly fuelPriceScraper: FuelPriceScraperService,
   ) {}
-
   async execute(): Promise<UnifiedResponse<FuelPriceResponseDto>> {
     const latest = await this.fuelPriceRepository.findLatest();
-
     if (latest) {
-      const timeSinceLastUpdate = Date.now() - new Date(latest.createdAt).getTime();
+      const latestCheck = Math.max(
+        latest.diesel.updatedAt.getTime(),
+        latest.petrol.updatedAt.getTime(),
+        latest.octane.updatedAt.getTime(),
+      );
+      const timeSinceLastUpdate = Date.now() - latestCheck;
       const sixHoursInMs = 6 * 60 * 60 * 1000;
       if (timeSinceLastUpdate < sixHoursInMs) {
         return ok({
@@ -32,15 +35,14 @@ export class ManualFuelUpdateUseCase {
     const scraped = await this.fuelPriceScraper.scrape();
 
     if (
-      scraped.diesel == null &&
-      scraped.petrol == null &&
-      scraped.octane == null
+      scraped.diesel.price == null &&
+      scraped.petrol.price == null &&
+      scraped.octane.price == null
     ) {
       throw new BadRequestException('Unable to scrape fuel prices from source');
     }
 
     const result = await this.fuelPriceRepository.saveIfChanged({
-      date: new Date(),
       diesel: scraped.diesel,
       petrol: scraped.petrol,
       octane: scraped.octane,

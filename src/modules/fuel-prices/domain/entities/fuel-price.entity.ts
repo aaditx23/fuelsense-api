@@ -1,10 +1,14 @@
-export type FuelPriceEntity = {
-  id: number;
-  date: Date;
-  diesel: number | null;
-  petrol: number | null;
-  octane: number | null;
+export type FuelPriceDetail = {
+  price: number | null;
+  updatedAt: Date;
+  effectiveFrom: Date | null;
   createdAt: Date;
+};
+
+export type FuelPriceEntity = {
+  diesel: FuelPriceDetail;
+  petrol: FuelPriceDetail;
+  octane: FuelPriceDetail;
 };
 
 export type FuelPriceSummary = {
