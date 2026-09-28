@@ -42,4 +42,14 @@ export class FuelPricesController {
   manualFuelUpdate() {
     return this.manualFuelUpdateUseCase.execute();
   }
+
+  @ApiOperation({
+    summary: 'Trigger Manual Fuel Update (cron)',
+    description: 'Vercel Cron Jobs only send GET requests, so this mirrors the POST endpoint above for the scheduled job in vercel.json.',
+  })
+  @ApiOkResponse({ description: 'Successful Response' })
+  @Get('manual-fuel-update')
+  manualFuelUpdateCron() {
+    return this.manualFuelUpdateUseCase.execute();
+  }
 }
