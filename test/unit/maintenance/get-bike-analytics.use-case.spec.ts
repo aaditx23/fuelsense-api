@@ -9,6 +9,9 @@ describe('GetBikeAnalyticsUseCase', () => {
   const repositoryMock: jest.Mocked<MaintenanceRepository> = {
     isUserBikeOwnedByUser: jest.fn(),
     createMaintenanceRecord: jest.fn(),
+    findOwnedRecord: jest.fn(),
+    updateMaintenanceRecord: jest.fn(),
+    deleteMaintenanceRecord: jest.fn(),
     getUserMaintenanceLogs: jest.fn(),
     getBikeModelMaintenanceLogs: jest.fn(),
     getBikeModelUserBikes: jest.fn(),

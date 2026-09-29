@@ -1,4 +1,14 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -10,16 +20,21 @@ import { CurrentUser } from '../../../common/auth/current-user.decorator';
 import type { AuthUser } from '../../../common/auth/current-user.decorator';
 import { JwtAuthGuard } from '../../../common/auth/jwt-auth.guard';
 import { CreateMaintenanceLogUseCase } from '../application/use-cases/create-maintenance-log.use-case';
+import { DeleteMaintenanceLogUseCase } from '../application/use-cases/delete-maintenance-log.use-case';
+import { UpdateMaintenanceLogUseCase } from '../application/use-cases/update-maintenance-log.use-case';
 import { GetMaintenanceLogsUseCase } from '../application/use-cases/get-maintenance-logs.use-case';
 import { GetBikeAnalyticsUseCase } from '../application/use-cases/get-bike-analytics.use-case';
 import { GetRegisteredPartsUseCase } from '../application/use-cases/get-registered-parts.use-case';
 import { CreateMaintenanceDto } from './dto/create-maintenance.dto';
+import { UpdateMaintenanceDto } from './dto/update-maintenance.dto';
 
 @ApiTags('maintenance')
 @Controller()
 export class MaintenanceController {
   constructor(
     private readonly createMaintenanceLogUseCase: CreateMaintenanceLogUseCase,
+    private readonly updateMaintenanceLogUseCase: UpdateMaintenanceLogUseCase,
+    private readonly deleteMaintenanceLogUseCase: DeleteMaintenanceLogUseCase,
     private readonly getMaintenanceLogsUseCase: GetMaintenanceLogsUseCase,
     private readonly getBikeAnalyticsUseCase: GetBikeAnalyticsUseCase,
     private readonly getRegisteredPartsUseCase: GetRegisteredPartsUseCase,
@@ -33,6 +48,32 @@ export class MaintenanceController {
   @Post('api/v1/maintenance')
   createRecord(@CurrentUser() user: AuthUser, @Body() dto: CreateMaintenanceDto) {
     return this.createMaintenanceLogUseCase.execute(user.userId, dto);
+  }
+
+  @ApiOperation({ summary: 'Update Maintenance Log', description: 'Update fields of one of the authenticated user maintenance logs. Only the provided fields change.' })
+  @ApiBearerAuth('HTTPBearer')
+  @UseGuards(JwtAuthGuard)
+  @ApiBody({ type: UpdateMaintenanceDto })
+  @ApiOkResponse({ description: 'Successful Response' })
+  @Patch('api/v1/maintenance/:id')
+  updateRecord(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateMaintenanceDto,
+  ) {
+    return this.updateMaintenanceLogUseCase.execute(user.userId, id, dto);
+  }
+
+  @ApiOperation({ summary: 'Delete Maintenance Log', description: 'Delete one of the authenticated user maintenance logs.' })
+  @ApiBearerAuth('HTTPBearer')
+  @UseGuards(JwtAuthGuard)
+  @ApiOkResponse({ description: 'Successful Response' })
+  @Delete('api/v1/maintenance/:id')
+  deleteRecord(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return this.deleteMaintenanceLogUseCase.execute(user.userId, id);
   }
 
   @ApiOperation({ summary: 'Get Maintenance Logs', description: 'Get all maintenance logs for the authenticated user.' })

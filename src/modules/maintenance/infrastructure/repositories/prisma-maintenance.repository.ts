@@ -4,6 +4,7 @@ import { MaintenanceRecordEntity } from '../../domain/entities/maintenance-recor
 import {
   CreateMaintenanceInput,
   MaintenanceRepository,
+  UpdateMaintenanceInput,
 } from '../../domain/repositories/maintenance.repository';
 
 @Injectable()
@@ -60,6 +61,49 @@ export class PrismaMaintenanceRepository implements MaintenanceRepository {
       ...record,
       userBikeId: input.userBikeId,
     };
+  }
+
+  async findOwnedRecord(userId: number, id: number): Promise<MaintenanceRecordEntity | null> {
+    const row = await this.prisma.maintenanceRecord.findFirst({
+      where: { id, userId },
+      include: { userBike: true },
+    });
+
+    return row ? { ...row, userBikeId: row.userBike.bikeId } : null;
+  }
+
+  async updateMaintenanceRecord(
+    id: number,
+    input: UpdateMaintenanceInput,
+  ): Promise<MaintenanceRecordEntity> {
+    // Keep the parts catalog in step when a log is moved to a new part name.
+    if (input.category !== undefined) {
+      await this.prisma.part.upsert({
+        where: { name: input.category },
+        update: {},
+        create: { name: input.category },
+      });
+    }
+
+    const row = await this.prisma.maintenanceRecord.update({
+      where: { id },
+      data: {
+        odometerReading: input.odometerReading,
+        category: input.category,
+        description: input.description,
+        partsCost: input.partsCost,
+        laborCost: input.laborCost,
+        partsBrand: input.partsBrand,
+        serviceDate: input.serviceDate,
+      },
+      include: { userBike: true },
+    });
+
+    return { ...row, userBikeId: row.userBike.bikeId };
+  }
+
+  async deleteMaintenanceRecord(id: number): Promise<void> {
+    await this.prisma.maintenanceRecord.delete({ where: { id } });
   }
 
   async getUserMaintenanceLogs(userId: number): Promise<MaintenanceRecordEntity[]> {
