@@ -62,8 +62,14 @@ export class PrismaCommunityRepository implements CommunityRepository {
 
   async getBikeFuelRecords(bikeId: number): Promise<FuelRecordRow[]> {
     return this.prisma.fuelRecord.findMany({
-      where: { userBike: { bikeId }, tripMeterReading: { gt: 0 }, fuelLiter: { gt: 0 } },
-      select: { userBikeId: true, tripMeterReading: true, fuelLiter: true },
+      where: { userBike: { bikeId } },
+      select: {
+        userBikeId: true,
+        entryType: true,
+        odometerAtReserve: true,
+        fuelLiter: true,
+        createdAt: true,
+      },
     });
   }
 

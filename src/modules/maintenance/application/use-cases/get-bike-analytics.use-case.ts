@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { reserveCycleTotals } from '../../../../common/fuel/mileage-calculator';
 import { ok, UnifiedResponse } from '../../../../common/api/unified-response';
 import { BikeAnalyticsResponseDto } from '../../presentation/dto/bike-analytics-response.dto';
 import { MAINTENANCE_REPOSITORY } from '../../domain/repositories/maintenance.repository';
@@ -16,16 +17,9 @@ export class GetBikeAnalyticsUseCase {
     const fuelRecords = await this.maintenanceRepository.getBikeModelFuelRecords(bikeId);
     let totalDistance = 0;
     let totalFuel = 0;
-    for (const record of fuelRecords) {
-      if (
-        record.tripMeterReading != null &&
-        record.tripMeterReading > 0 &&
-        record.fuelLiter != null &&
-        record.fuelLiter > 0
-      ) {
-        totalDistance += record.tripMeterReading;
-        totalFuel += record.fuelLiter;
-      }
+    for (const totals of reserveCycleTotals(fuelRecords).values()) {
+      totalDistance += totals.distance;
+      totalFuel += totals.fuel;
     }
     const realMileage = totalFuel > 0 ? parseFloat((totalDistance / totalFuel).toFixed(2)) : 0.0;
 

@@ -1,3 +1,4 @@
+import type { MileageRecord } from '../../../../common/fuel/mileage-calculator';
 import type { CommunityBikeEntity } from '../entities/community-bike.entity';
 import type { BikeCommunityProfileEntity } from '../entities/bike-community-profile.entity';
 
@@ -9,11 +10,7 @@ export type CommunityBikesQuery = {
   limit: number;
 };
 
-export type FuelRecordRow = {
-  userBikeId: number;
-  tripMeterReading: number | null;
-  fuelLiter: number | null;
-};
+export type FuelRecordRow = MileageRecord;
 
 export type MaintenanceRecordRow = {
   userBikeId: number;

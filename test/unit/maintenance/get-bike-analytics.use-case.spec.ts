@@ -35,16 +35,18 @@ describe('GetBikeAnalyticsUseCase', () => {
   });
 
   it('correctly aggregates metrics for a bike model', async () => {
-    // 1. Mock fuel records for mileage
+    // 1. Mock fuel records for mileage (reserve-to-reserve, odometer based)
+    const at = (day: number) => new Date(Date.UTC(2026, 0, day));
     repositoryMock.getBikeModelFuelRecords.mockResolvedValue([
-      { id: 1, userBikeId: 10, tripMeterReading: 120, fuelLiter: 4 },
-      { id: 2, userBikeId: 10, tripMeterReading: 150, fuelLiter: 5 },
-      { id: 3, userBikeId: 11, tripMeterReading: null, fuelLiter: 3 }, // missing distance
-      { id: 4, userBikeId: 11, tripMeterReading: 80, fuelLiter: 0 },   // zero fuel
-      { id: 5, userBikeId: 11, tripMeterReading: 180, fuelLiter: 6 },
+      // Bike 10: reserve hits at 1000 and 1300 km, 5 L refuel + 1 L top-up between
+      { userBikeId: 10, entryType: 'RESERVE_COMPLETE', odometerAtReserve: 1000, fuelLiter: 5, createdAt: at(1) },
+      { userBikeId: 10, entryType: 'TOPUP', odometerAtReserve: null, fuelLiter: 1, createdAt: at(5) },
+      { userBikeId: 10, entryType: 'RESERVE_COMPLETE', odometerAtReserve: 1300, fuelLiter: 5, createdAt: at(10) },
+      // Bike 11: a single reserve entry is only a starting point
+      { userBikeId: 11, entryType: 'RESERVE_COMPLETE', odometerAtReserve: 500, fuelLiter: 4, createdAt: at(2) },
     ]);
 
-    // Expected mileage: (120 + 150 + 180) / (4 + 5 + 6) = 450 / 15 = 30.0
+    // Expected mileage: 300 km / (5 + 1) L = 50.0
 
     // 2. Mock user bikes with varying age
     const now = new Date();
@@ -141,7 +143,7 @@ describe('GetBikeAnalyticsUseCase', () => {
     const result = await useCase.execute(42);
 
     expect(result.success).toBe(true);
-    expect(result.data?.realMileage).toBe(30.0);
+    expect(result.data?.realMileage).toBe(50.0);
     expect(result.data?.averageMonthlyCost).toBe(550.0);
     expect(result.data?.reliabilityScore).toBe(4.5);
     expect(result.data?.consumablesLifespan).toEqual({

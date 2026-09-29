@@ -1,3 +1,4 @@
+import type { MileageRecord } from '../../../../common/fuel/mileage-calculator';
 import { MaintenanceRecordEntity } from '../entities/maintenance-record.entity';
 
 export const MAINTENANCE_REPOSITORY = 'MAINTENANCE_REPOSITORY';
@@ -34,15 +35,6 @@ export interface MaintenanceRepository {
   getUserMaintenanceLogs(userId: number): Promise<MaintenanceRecordEntity[]>;
   getBikeModelMaintenanceLogs(bikeId: number): Promise<MaintenanceRecordEntity[]>;
   getBikeModelUserBikes(bikeId: number): Promise<{ id: number; userId: number; createdAt: Date }[]>;
-  getBikeModelFuelRecords(
-    bikeId: number,
-  ): Promise<
-    {
-      id: number;
-      userBikeId: number;
-      tripMeterReading: number | null;
-      fuelLiter: number | null;
-    }[]
-  >;
+  getBikeModelFuelRecords(bikeId: number): Promise<MileageRecord[]>;
   getRegisteredParts(): Promise<string[]>;
 }
