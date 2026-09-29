@@ -1,4 +1,4 @@
-import type { MileageRecord } from '../../../../common/fuel/mileage-calculator';
+import type { MileageSample } from '../../../../common/fuel/mileage-calculator';
 import type { CommunityBikeEntity } from '../entities/community-bike.entity';
 import type { BikeCommunityProfileEntity } from '../entities/bike-community-profile.entity';
 
@@ -9,8 +9,6 @@ export type CommunityBikesQuery = {
   page: number;
   limit: number;
 };
-
-export type FuelRecordRow = MileageRecord;
 
 export type MaintenanceRecordRow = {
   userBikeId: number;
@@ -24,6 +22,8 @@ export type MaintenanceRecordRow = {
 export interface CommunityRepository {
   getActiveBikesWithStats(query: CommunityBikesQuery): Promise<CommunityBikeEntity[]>;
   getBikeById(bikeId: number): Promise<{ id: number; brand: string; model: string; engineCc: number; modelYear: number; fuelType: string; image: string | null } | null>;
-  getBikeFuelRecords(bikeId: number): Promise<FuelRecordRow[]>;
+  getBikeMileageSamples(bikeId: number): Promise<MileageSample[]>;
+  /** User bikes of this model that logged at least one refuel. */
+  getBikeFuelContributorIds(bikeId: number): Promise<number[]>;
   getBikeMaintenanceRecords(bikeId: number): Promise<MaintenanceRecordRow[]>;
 }

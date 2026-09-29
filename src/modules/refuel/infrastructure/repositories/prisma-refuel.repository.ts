@@ -1,3 +1,4 @@
+import { reserveCycleTotals } from '../../../../common/fuel/mileage-calculator';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../shared/infrastructure/prisma/prisma.service';
 import { RefuelRecordEntity } from '../../domain/entities/refuel-record.entity';
@@ -86,6 +87,8 @@ export class PrismaRefuelRepository implements RefuelRepository {
       },
     });
 
+    await this.refreshMileage(userBike.id);
+
     return {
       ...record,
       userBikeId: input.userBikeId,
@@ -108,11 +111,39 @@ export class PrismaRefuelRepository implements RefuelRepository {
       include: { userBike: true },
     });
 
+    await this.refreshMileage(record.userBikeId);
+
     return { ...record, userBikeId: record.userBike.bikeId };
   }
 
   async deleteRefuelRecord(id: number): Promise<void> {
-    await this.prisma.fuelRecord.delete({ where: { id } });
+    const deleted = await this.prisma.fuelRecord.delete({ where: { id } });
+    await this.refreshMileage(deleted.userBikeId);
+  }
+
+  /**
+   * Recomputes one user bike's stored reserve-cycle totals from its own
+   * records (a handful of rows), so reads elsewhere are a plain column read.
+   */
+  private async refreshMileage(userBikeDbId: number): Promise<void> {
+    const records = await this.prisma.fuelRecord.findMany({
+      where: { userBikeId: userBikeDbId },
+      select: {
+        userBikeId: true,
+        entryType: true,
+        odometerAtReserve: true,
+        fuelLiter: true,
+        createdAt: true,
+      },
+    });
+    const totals = reserveCycleTotals(records).get(userBikeDbId);
+    await this.prisma.userBike.update({
+      where: { id: userBikeDbId },
+      data: {
+        mileageDistance: totals?.distance ?? 0,
+        mileageFuel: totals?.fuel ?? 0,
+      },
+    });
   }
 
   async getUserRefuelRecords(userId: number): Promise<RefuelRecordEntity[]> {

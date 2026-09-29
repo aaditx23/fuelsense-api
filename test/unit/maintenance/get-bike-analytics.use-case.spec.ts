@@ -15,7 +15,7 @@ describe('GetBikeAnalyticsUseCase', () => {
     getUserMaintenanceLogs: jest.fn(),
     getBikeModelMaintenanceLogs: jest.fn(),
     getBikeModelUserBikes: jest.fn(),
-    getBikeModelFuelRecords: jest.fn(),
+    getBikeModelMileageTotals: jest.fn(),
     getRegisteredParts: jest.fn(),
   };
 
@@ -35,18 +35,12 @@ describe('GetBikeAnalyticsUseCase', () => {
   });
 
   it('correctly aggregates metrics for a bike model', async () => {
-    // 1. Mock fuel records for mileage (reserve-to-reserve, odometer based)
-    const at = (day: number) => new Date(Date.UTC(2026, 0, day));
-    repositoryMock.getBikeModelFuelRecords.mockResolvedValue([
-      // Bike 10: reserve hits at 1000 and 1300 km, 5 L refuel + 1 L top-up between
-      { userBikeId: 10, entryType: 'RESERVE_COMPLETE', odometerAtReserve: 1000, fuelLiter: 5, createdAt: at(1) },
-      { userBikeId: 10, entryType: 'TOPUP', odometerAtReserve: null, fuelLiter: 1, createdAt: at(5) },
-      { userBikeId: 10, entryType: 'RESERVE_COMPLETE', odometerAtReserve: 1300, fuelLiter: 5, createdAt: at(10) },
-      // Bike 11: a single reserve entry is only a starting point
-      { userBikeId: 11, entryType: 'RESERVE_COMPLETE', odometerAtReserve: 500, fuelLiter: 4, createdAt: at(2) },
+    // 1. Stored reserve-cycle totals per user bike (only bikes with a cycle)
+    repositoryMock.getBikeModelMileageTotals.mockResolvedValue([
+      { distance: 300, fuel: 6 },
     ]);
 
-    // Expected mileage: 300 km / (5 + 1) L = 50.0
+    // Expected mileage: 300 km / 6 L = 50.0
 
     // 2. Mock user bikes with varying age
     const now = new Date();
@@ -152,7 +146,7 @@ describe('GetBikeAnalyticsUseCase', () => {
   });
 
   it('returns default metrics when no history is present', async () => {
-    repositoryMock.getBikeModelFuelRecords.mockResolvedValue([]);
+    repositoryMock.getBikeModelMileageTotals.mockResolvedValue([]);
     repositoryMock.getBikeModelUserBikes.mockResolvedValue([]);
     repositoryMock.getBikeModelMaintenanceLogs.mockResolvedValue([]);
 

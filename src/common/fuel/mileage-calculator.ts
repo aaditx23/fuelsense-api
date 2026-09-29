@@ -60,7 +60,5 @@ export function reserveCycleTotals(records: MileageRecord[]): Map<number, Mileag
   return totals;
 }
 
-/** One measured km/L per bike that has at least one full reserve cycle. */
-export function perBikeMileages(records: MileageRecord[]): number[] {
-  return [...reserveCycleTotals(records).values()].map((t) => t.distance / t.fuel);
-}
+/** Stored per-user-bike totals; only bikes with fuel have a measurable mileage. */
+export type MileageSample = MileageTotals;

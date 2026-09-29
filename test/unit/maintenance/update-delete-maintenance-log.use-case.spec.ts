@@ -33,7 +33,7 @@ describe('Update/Delete maintenance log use cases', () => {
     getUserMaintenanceLogs: jest.fn(),
     getBikeModelMaintenanceLogs: jest.fn(),
     getBikeModelUserBikes: jest.fn(),
-    getBikeModelFuelRecords: jest.fn(),
+    getBikeModelMileageTotals: jest.fn(),
     getRegisteredParts: jest.fn(),
   };
 

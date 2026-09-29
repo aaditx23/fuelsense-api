@@ -1,4 +1,4 @@
-import type { MileageRecord } from '../../../../common/fuel/mileage-calculator';
+import type { MileageTotals } from '../../../../common/fuel/mileage-calculator';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../shared/infrastructure/prisma/prisma.service';
 import { MaintenanceRecordEntity } from '../../domain/entities/maintenance-record.entity';
@@ -153,17 +153,12 @@ export class PrismaMaintenanceRepository implements MaintenanceRepository {
     return rows;
   }
 
-  async getBikeModelFuelRecords(bikeId: number): Promise<MileageRecord[]> {
-    return this.prisma.fuelRecord.findMany({
-      where: { userBike: { bikeId } },
-      select: {
-        userBikeId: true,
-        entryType: true,
-        odometerAtReserve: true,
-        fuelLiter: true,
-        createdAt: true,
-      },
+  async getBikeModelMileageTotals(bikeId: number): Promise<MileageTotals[]> {
+    const rows = await this.prisma.userBike.findMany({
+      where: { bikeId, mileageFuel: { gt: 0 } },
+      select: { mileageDistance: true, mileageFuel: true },
     });
+    return rows.map((r) => ({ distance: r.mileageDistance, fuel: r.mileageFuel }));
   }
 
   async getRegisteredParts(): Promise<string[]> {

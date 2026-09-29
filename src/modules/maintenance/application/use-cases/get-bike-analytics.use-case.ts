@@ -1,5 +1,4 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { reserveCycleTotals } from '../../../../common/fuel/mileage-calculator';
 import { ok, UnifiedResponse } from '../../../../common/api/unified-response';
 import { BikeAnalyticsResponseDto } from '../../presentation/dto/bike-analytics-response.dto';
 import { MAINTENANCE_REPOSITORY } from '../../domain/repositories/maintenance.repository';
@@ -14,10 +13,10 @@ export class GetBikeAnalyticsUseCase {
 
   async execute(bikeId: number): Promise<UnifiedResponse<BikeAnalyticsResponseDto>> {
     // 1. Real Mileage
-    const fuelRecords = await this.maintenanceRepository.getBikeModelFuelRecords(bikeId);
+    const mileageTotals = await this.maintenanceRepository.getBikeModelMileageTotals(bikeId);
     let totalDistance = 0;
     let totalFuel = 0;
-    for (const totals of reserveCycleTotals(fuelRecords).values()) {
+    for (const totals of mileageTotals) {
       totalDistance += totals.distance;
       totalFuel += totals.fuel;
     }

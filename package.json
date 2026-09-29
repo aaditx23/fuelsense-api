@@ -21,7 +21,8 @@
     "dev": "nest start --watch",
     "debug": "nest start --debug --watch",
     "prod": "node dist/main",
-    "seed:admin": "ts-node scripts/seed-admin.ts"
+    "seed:admin": "ts-node scripts/seed-admin.ts",
+    "backfill:mileage": "ts-node scripts/backfill-mileage.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

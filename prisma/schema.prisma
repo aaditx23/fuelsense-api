@@ -68,6 +68,10 @@ model UserBike {
   userId             Int                 @map("user_id")
   bikeId             Int                 @map("bike_id")
   createdAt          DateTime            @default(now()) @map("created_at")
+  /// Reserve-cycle totals, kept up to date whenever a refuel changes (see
+  /// PrismaRefuelRepository) so community stats never recompute from records.
+  mileageDistance    Float               @default(0) @map("mileage_distance")
+  mileageFuel        Float               @default(0) @map("mileage_fuel")
   user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   bike               Bike                @relation(fields: [bikeId], references: [id], onDelete: Cascade)
   fuelRecords        FuelRecord[]

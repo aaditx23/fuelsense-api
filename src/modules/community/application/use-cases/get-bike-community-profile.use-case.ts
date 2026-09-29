@@ -1,4 +1,3 @@
-import { perBikeMileages } from '../../../../common/fuel/mileage-calculator';
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { ok, UnifiedResponse } from '../../../../common/api/unified-response';
 import { COMMUNITY_REPOSITORY } from '../../domain/repositories/community.repository';
@@ -17,9 +16,9 @@ export class GetBikeCommunityProfileUseCase {
     if (!bike) throw new NotFoundException('Bike not found');
 
     // --- Mileage ---
-    const fuelRows = await this.communityRepository.getBikeFuelRecords(bikeId);
+    const samples = await this.communityRepository.getBikeMileageSamples(bikeId);
 
-    const ownerMileages = perBikeMileages(fuelRows);
+    const ownerMileages = samples.map((o) => o.distance / o.fuel);
 
     const sampleSize = ownerMileages.length;
     const mileage: MileageStatsEntity =
@@ -83,7 +82,7 @@ export class GetBikeCommunityProfileUseCase {
 
     // Count distinct reviewers: anyone who logged a refuel OR maintenance for this bike
     const reviewerIds = new Set([
-      ...fuelRows.map((r) => r.userBikeId),
+      ...(await this.communityRepository.getBikeFuelContributorIds(bikeId)),
       ...maintenanceRows.map((r) => r.userBikeId),
     ]);
     const totalContributors = reviewerIds.size;

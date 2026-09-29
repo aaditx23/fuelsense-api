@@ -1,7 +1,8 @@
-import { perBikeMileages } from '../../../../common/fuel/mileage-calculator';
+import type { MileageSample } from '../../../../common/fuel/mileage-calculator';
+import { Prisma } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../shared/infrastructure/prisma/prisma.service';
-import type { CommunityRepository, CommunityBikesQuery, FuelRecordRow, MaintenanceRecordRow } from '../../domain/repositories/community.repository';
+import type { CommunityRepository, CommunityBikesQuery, MaintenanceRecordRow } from '../../domain/repositories/community.repository';
 import type { CommunityBikeEntity } from '../../domain/entities/community-bike.entity';
 
 @Injectable()
@@ -27,29 +28,37 @@ export class PrismaCommunityRepository implements CommunityRepository {
       orderBy: { brand: 'asc' },
     });
 
-    return Promise.all(
-      bikes.map(async (bike) => {
-        const totalOwners = await this.prisma.userBike.count({ where: { bikeId: bike.id } });
+    if (bikes.length === 0) return [];
 
-        const fuelRows = await this.getBikeFuelRecords(bike.id);
-        const mileages = perBikeMileages(fuelRows);
-        const avgMileage =
-          mileages.length > 0
-            ? parseFloat((mileages.reduce((s, v) => s + v, 0) / mileages.length).toFixed(2))
-            : 0;
+    // One aggregate over the page's bikes, reading the stored per-bike totals.
+    const stats = await this.prisma.$queryRaw<
+      { bikeId: number; owners: number; avgMileage: number | null }[]
+    >(Prisma.sql`
+      SELECT bike_id AS "bikeId",
+             COUNT(*)::int AS owners,
+             AVG(mileage_distance / mileage_fuel) FILTER (WHERE mileage_fuel > 0) AS "avgMileage"
+      FROM user_bikes
+      WHERE bike_id IN (${Prisma.join(bikes.map((b) => b.id))})
+      GROUP BY bike_id
+    `);
+    const statsByBike = new Map(stats.map((s) => [s.bikeId, s]));
 
-        return {
-          id: bike.id,
-          brand: bike.brand,
-          model: bike.model,
-          engineCc: bike.engineCc,
-          modelYear: bike.modelYear,
-          fuelType: bike.fuelType,
-          image: bike.image,
-          stats: { avgMileage, totalOwners },
-        };
-      }),
-    );
+    return bikes.map((bike) => {
+      const stat = statsByBike.get(bike.id);
+      return {
+        id: bike.id,
+        brand: bike.brand,
+        model: bike.model,
+        engineCc: bike.engineCc,
+        modelYear: bike.modelYear,
+        fuelType: bike.fuelType,
+        image: bike.image,
+        stats: {
+          avgMileage: stat?.avgMileage ? parseFloat(Number(stat.avgMileage).toFixed(2)) : 0,
+          totalOwners: stat?.owners ?? 0,
+        },
+      };
+    });
   }
 
   async getBikeById(bikeId: number) {
@@ -59,17 +68,21 @@ export class PrismaCommunityRepository implements CommunityRepository {
     });
   }
 
-  async getBikeFuelRecords(bikeId: number): Promise<FuelRecordRow[]> {
-    return this.prisma.fuelRecord.findMany({
-      where: { userBike: { bikeId } },
-      select: {
-        userBikeId: true,
-        entryType: true,
-        odometerAtReserve: true,
-        fuelLiter: true,
-        createdAt: true,
-      },
+  async getBikeMileageSamples(bikeId: number): Promise<MileageSample[]> {
+    const rows = await this.prisma.userBike.findMany({
+      where: { bikeId, mileageFuel: { gt: 0 } },
+      select: { mileageDistance: true, mileageFuel: true },
     });
+    return rows.map((r) => ({ distance: r.mileageDistance, fuel: r.mileageFuel }));
+  }
+
+  async getBikeFuelContributorIds(bikeId: number): Promise<number[]> {
+    const rows = await this.prisma.fuelRecord.findMany({
+      where: { userBike: { bikeId } },
+      select: { userBikeId: true },
+      distinct: ['userBikeId'],
+    });
+    return rows.map((r) => r.userBikeId);
   }
 
   async getBikeMaintenanceRecords(bikeId: number): Promise<MaintenanceRecordRow[]> {
