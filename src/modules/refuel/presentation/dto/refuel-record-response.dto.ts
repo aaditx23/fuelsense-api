@@ -1,4 +1,7 @@
-import { RefuelRecordEntity } from '../../domain/entities/refuel-record.entity';
+import {
+  RefuelEntryType,
+  RefuelRecordEntity,
+} from '../../domain/entities/refuel-record.entity';
 
 export class RefuelRecordResponseDto {
   id!: number;
@@ -10,6 +13,7 @@ export class RefuelRecordResponseDto {
   odometerAtReserve!: number | null;
   fuelLiter!: number | null;
   fuelPrice!: number | null;
+  entryType!: RefuelEntryType;
   createdAt!: Date;
 
   static fromEntity(entity: RefuelRecordEntity): RefuelRecordResponseDto {
@@ -23,6 +27,7 @@ export class RefuelRecordResponseDto {
       odometerAtReserve: entity.odometerAtReserve,
       fuelLiter: entity.fuelLiter,
       fuelPrice: entity.fuelPrice,
+      entryType: entity.entryType,
       createdAt: entity.createdAt,
     };
   }

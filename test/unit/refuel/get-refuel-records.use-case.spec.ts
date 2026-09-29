@@ -9,7 +9,11 @@ describe('GetRefuelRecordsUseCase', () => {
   const repositoryMock: jest.Mocked<RefuelRepository> = {
     isUserBikeOwnedByUser: jest.fn(),
     countByUserBike: jest.fn(),
+    hasIncompleteReserve: jest.fn(),
+    findOwnedRecord: jest.fn(),
     createRefuelRecord: jest.fn(),
+    completeReserveRecord: jest.fn(),
+    deleteRefuelRecord: jest.fn(),
     getUserRefuelRecords: jest.fn(),
   };
 
@@ -49,6 +53,7 @@ describe('GetRefuelRecordsUseCase', () => {
         odometerAtReserve: null,
         fuelLiter: 2,
         fuelPrice: null,
+        entryType: 'TOPUP',
         createdAt: new Date(),
       },
     ]);

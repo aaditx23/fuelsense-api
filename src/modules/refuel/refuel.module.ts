@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { AuthModule } from '../auth/auth.module';
+import { CompleteRefuelRecordUseCase } from './application/use-cases/complete-refuel-record.use-case';
 import { CreateRefuelRecordUseCase } from './application/use-cases/create-refuel-record.use-case';
+import { DeleteRefuelRecordUseCase } from './application/use-cases/delete-refuel-record.use-case';
 import { GetRefuelRecordsUseCase } from './application/use-cases/get-refuel-records.use-case';
 import { REFUEL_REPOSITORY } from './domain/repositories/refuel.repository';
 import { PrismaRefuelRepository } from './infrastructure/repositories/prisma-refuel.repository';
@@ -12,6 +14,8 @@ import { RefuelController } from './presentation/refuel.controller';
   providers: [
     CreateRefuelRecordUseCase,
     GetRefuelRecordsUseCase,
+    CompleteRefuelRecordUseCase,
+    DeleteRefuelRecordUseCase,
     {
       provide: REFUEL_REPOSITORY,
       useClass: PrismaRefuelRepository,

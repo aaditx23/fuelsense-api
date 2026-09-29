@@ -17,6 +17,12 @@ enum FuelType {
   OCTANE
 }
 
+enum RefuelEntryType {
+  RESERVE_INCOMPLETE
+  RESERVE_COMPLETE
+  TOPUP
+}
+
 model User {
   id                 Int                 @id @default(autoincrement())
   username           String              @unique
@@ -81,6 +87,7 @@ model FuelRecord {
   odometerAtReserve  Float?    @map("odometer_at_reserve")
   fuelLiter          Float?    @map("fuel_liter")
   fuelPrice          Float?    @map("fuel_price")
+  entryType          RefuelEntryType @default(TOPUP) @map("entry_type")
   createdAt          DateTime  @default(now()) @map("created_at")
   user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   userBike           UserBike  @relation(fields: [userBikeId], references: [id], onDelete: Cascade)
