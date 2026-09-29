@@ -28,11 +28,8 @@ export class CreateRefuelRecordUseCase {
 
     if (isReserveMarker) {
       this.validateReserveMarker(input);
-    } else if (
-      (input.fuelLiter == null && input.fuelPrice == null) ||
-      (input.fuelLiter != null && input.fuelPrice != null)
-    ) {
-      throw new BadRequestException('Exactly one of fuelLiter or fuelPrice is required');
+    } else if (input.fuelLiter == null && input.fuelPrice == null) {
+      throw new BadRequestException('At least one of fuelLiter or fuelPrice is required');
     }
 
     const isOwned = await this.refuelRepository.isUserBikeOwnedByUser(userId, input.userBikeId);

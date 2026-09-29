@@ -74,12 +74,9 @@ describe('Complete/Delete refuel record use cases', () => {
     expect(result.data?.entryType).toBe('RESERVE_COMPLETE');
   });
 
-  it('rejects completion without exactly one of fuelLiter/fuelPrice', async () => {
+  it('rejects completion without fuelLiter or fuelPrice', async () => {
     await expect(
       complete.execute(1, 5, { odometerReading: 12300 }),
-    ).rejects.toThrow(BadRequestException);
-    await expect(
-      complete.execute(1, 5, { odometerReading: 12300, fuelLiter: 2, fuelPrice: 300 }),
     ).rejects.toThrow(BadRequestException);
   });
 

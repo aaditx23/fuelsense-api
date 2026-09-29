@@ -24,11 +24,8 @@ export class CompleteRefuelRecordUseCase {
     id: number,
     input: CompleteRefuelDto,
   ): Promise<UnifiedResponse<RefuelRecordResponseDto>> {
-    if (
-      (input.fuelLiter == null && input.fuelPrice == null) ||
-      (input.fuelLiter != null && input.fuelPrice != null)
-    ) {
-      throw new BadRequestException('Exactly one of fuelLiter or fuelPrice is required');
+    if (input.fuelLiter == null && input.fuelPrice == null) {
+      throw new BadRequestException('At least one of fuelLiter or fuelPrice is required');
     }
 
     if (input.odometerReading == null && input.tripMeterReading == null) {

@@ -45,16 +45,6 @@ describe('CreateRefuelRecordUseCase', () => {
     ).rejects.toThrow(BadRequestException);
   });
 
-  it('rejects when fuelLiter and fuelPrice are both provided', async () => {
-    await expect(
-      useCase.execute(1, {
-        userBikeId: 10,
-        fuelLiter: 2,
-        fuelPrice: 300,
-      }),
-    ).rejects.toThrow(BadRequestException);
-  });
-
   it('rejects when user does not own the selected userBike', async () => {
     repositoryMock.isUserBikeOwnedByUser.mockResolvedValue(false);
 
@@ -88,6 +78,35 @@ describe('CreateRefuelRecordUseCase', () => {
         fuelPrice: 300,
       }),
     ).rejects.toThrow(BadRequestException);
+  });
+
+  it('accepts both fuelLiter and fuelPrice and stores both', async () => {
+    repositoryMock.isUserBikeOwnedByUser.mockResolvedValue(true);
+    repositoryMock.countByUserBike.mockResolvedValue(0);
+    repositoryMock.createRefuelRecord.mockResolvedValue({
+      id: 2,
+      userId: 1,
+      userBikeId: 10,
+      odometerReading: 1200,
+      tripMeterReading: null,
+      tripMeterAtReserve: null,
+      odometerAtReserve: null,
+      fuelLiter: 2,
+      fuelPrice: 300,
+      entryType: 'TOPUP',
+      createdAt: new Date(),
+    });
+
+    await useCase.execute(1, {
+      userBikeId: 10,
+      odometerReading: 1200,
+      fuelLiter: 2,
+      fuelPrice: 300,
+    });
+
+    expect(repositoryMock.createRefuelRecord).toHaveBeenCalledWith(
+      expect.objectContaining({ fuelLiter: 2, fuelPrice: 300 }),
+    );
   });
 
   it('creates refuel record successfully when input is valid', async () => {
