@@ -1,3 +1,4 @@
+import { perBikeMileages } from '../../../../common/fuel/mileage-calculator';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../shared/infrastructure/prisma/prisma.service';
 import type { CommunityRepository, CommunityBikesQuery, FuelRecordRow, MaintenanceRecordRow } from '../../domain/repositories/community.repository';
@@ -30,14 +31,12 @@ export class PrismaCommunityRepository implements CommunityRepository {
       bikes.map(async (bike) => {
         const totalOwners = await this.prisma.userBike.count({ where: { bikeId: bike.id } });
 
-        const fuelRows = await this.prisma.fuelRecord.findMany({
-          where: { userBike: { bikeId: bike.id }, tripMeterReading: { gt: 0 }, fuelLiter: { gt: 0 } },
-          select: { tripMeterReading: true, fuelLiter: true },
-        });
-
-        const totalDist = fuelRows.reduce((s, r) => s + (r.tripMeterReading ?? 0), 0);
-        const totalFuel = fuelRows.reduce((s, r) => s + (r.fuelLiter ?? 0), 0);
-        const avgMileage = totalFuel > 0 ? parseFloat((totalDist / totalFuel).toFixed(2)) : 0;
+        const fuelRows = await this.getBikeFuelRecords(bike.id);
+        const mileages = perBikeMileages(fuelRows);
+        const avgMileage =
+          mileages.length > 0
+            ? parseFloat((mileages.reduce((s, v) => s + v, 0) / mileages.length).toFixed(2))
+            : 0;
 
         return {
           id: bike.id,

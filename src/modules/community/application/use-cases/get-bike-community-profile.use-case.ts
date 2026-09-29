@@ -1,4 +1,4 @@
-import { reserveCycleTotals } from '../../../../common/fuel/mileage-calculator';
+import { perBikeMileages } from '../../../../common/fuel/mileage-calculator';
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { ok, UnifiedResponse } from '../../../../common/api/unified-response';
 import { COMMUNITY_REPOSITORY } from '../../domain/repositories/community.repository';
@@ -19,9 +19,7 @@ export class GetBikeCommunityProfileUseCase {
     // --- Mileage ---
     const fuelRows = await this.communityRepository.getBikeFuelRecords(bikeId);
 
-    const ownerMileages = [...reserveCycleTotals(fuelRows).values()].map(
-      (o) => o.distance / o.fuel,
-    );
+    const ownerMileages = perBikeMileages(fuelRows);
 
     const sampleSize = ownerMileages.length;
     const mileage: MileageStatsEntity =
