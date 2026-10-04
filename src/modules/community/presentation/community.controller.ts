@@ -2,6 +2,7 @@ import { Controller, Get, Param, ParseIntPipe, Query, UseGuards } from '@nestjs/
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../common/auth/jwt-auth.guard';
 import { GetCommunityBikesUseCase } from '../application/use-cases/get-community-bikes.use-case';
+import { GetBikeBrandInsightsUseCase } from '../application/use-cases/get-bike-brand-insights.use-case';
 import { GetBikeCommunityProfileUseCase } from '../application/use-cases/get-bike-community-profile.use-case';
 
 @ApiTags('community')
@@ -12,6 +13,7 @@ export class CommunityController {
   constructor(
     private readonly getCommunityBikesUseCase: GetCommunityBikesUseCase,
     private readonly getBikeCommunityProfileUseCase: GetBikeCommunityProfileUseCase,
+    private readonly getBikeBrandInsightsUseCase: GetBikeBrandInsightsUseCase,
   ) {}
 
   @ApiOperation({ summary: 'List community bikes with stats' })
@@ -33,5 +35,15 @@ export class CommunityController {
   @Get('bikes/:bikeId')
   getBikeProfile(@Param('bikeId', ParseIntPipe) bikeId: number) {
     return this.getBikeCommunityProfileUseCase.execute(bikeId);
+  }
+
+  @ApiOperation({ summary: 'Get part brand insights for a bike model' })
+  @ApiOkResponse({
+    description:
+      'Per part category, the brands riders of this model use ranked by cost per 1,000 km, with how long each lasts. Brands with too little data are left out.',
+  })
+  @Get('bikes/:bikeId/brand-insights')
+  getBrandInsights(@Param('bikeId', ParseIntPipe) bikeId: number) {
+    return this.getBikeBrandInsightsUseCase.execute(bikeId);
   }
 }
