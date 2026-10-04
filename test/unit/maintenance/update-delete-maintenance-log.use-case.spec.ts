@@ -139,4 +139,36 @@ describe('Update/Delete maintenance log use cases', () => {
       expect(repositoryMock.deleteMaintenanceRecord).not.toHaveBeenCalled();
     });
   });
+
+  describe('brand normalization', () => {
+    beforeEach(() => {
+      repositoryMock.findOwnedRecord.mockResolvedValue(record);
+      repositoryMock.updateMaintenanceRecord.mockResolvedValue(record);
+    });
+
+    it('stores the canonical brand', async () => {
+      await update.execute(1, 7, { partsBrand: 'castrol' });
+
+      expect(repositoryMock.updateMaintenanceRecord).toHaveBeenCalledWith(
+        7,
+        expect.objectContaining({ partsBrand: 'Castrol' }),
+      );
+    });
+
+    it('leaves the brand alone when it is not part of the update', async () => {
+      await update.execute(1, 7, { odometerReading: 5100 });
+
+      const input = repositoryMock.updateMaintenanceRecord.mock.calls[0][1];
+      expect(input.partsBrand).toBeUndefined();
+    });
+
+    it('clears the brand for blank input', async () => {
+      await update.execute(1, 7, { partsBrand: '  ' });
+
+      expect(repositoryMock.updateMaintenanceRecord).toHaveBeenCalledWith(
+        7,
+        expect.objectContaining({ partsBrand: null }),
+      );
+    });
+  });
 });

@@ -9,6 +9,7 @@ import { CreateMaintenanceDto } from '../../presentation/dto/create-maintenance.
 import { MaintenanceRecordResponseDto } from '../../presentation/dto/maintenance-record-response.dto';
 import { MAINTENANCE_REPOSITORY } from '../../domain/repositories/maintenance.repository';
 import type { MaintenanceRepository } from '../../domain/repositories/maintenance.repository';
+import { normalizeBrand } from '../../domain/services/brand-normalizer';
 
 @Injectable()
 export class CreateMaintenanceLogUseCase {
@@ -48,7 +49,7 @@ export class CreateMaintenanceLogUseCase {
       description: input.description,
       partsCost: input.partsCost,
       laborCost: input.laborCost,
-      partsBrand: input.partsBrand,
+      partsBrand: normalizeBrand(input.partsBrand),
       serviceDate,
     });
 

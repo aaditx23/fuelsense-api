@@ -58,4 +58,24 @@ describe('CreateMaintenanceLogUseCase', () => {
       expect.objectContaining({ category: 'ENGINE_OIL' }),
     );
   });
+
+  it('stores a canonical brand', async () => {
+    repository.createMaintenanceRecord.mockResolvedValue({ id: 1 });
+
+    await useCase.execute(1, { ...base, partsBrand: '  motul 7100 ' });
+
+    expect(repository.createMaintenanceRecord).toHaveBeenCalledWith(
+      expect.objectContaining({ partsBrand: 'Motul' }),
+    );
+  });
+
+  it('stores no brand for blank input', async () => {
+    repository.createMaintenanceRecord.mockResolvedValue({ id: 1 });
+
+    await useCase.execute(1, { ...base, partsBrand: '   ' });
+
+    expect(repository.createMaintenanceRecord).toHaveBeenCalledWith(
+      expect.objectContaining({ partsBrand: null }),
+    );
+  });
 });

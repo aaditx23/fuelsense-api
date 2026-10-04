@@ -9,6 +9,7 @@ import { UpdateMaintenanceDto } from '../../presentation/dto/update-maintenance.
 import { MaintenanceRecordResponseDto } from '../../presentation/dto/maintenance-record-response.dto';
 import { MAINTENANCE_REPOSITORY } from '../../domain/repositories/maintenance.repository';
 import type { MaintenanceRepository } from '../../domain/repositories/maintenance.repository';
+import { normalizeBrand } from '../../domain/services/brand-normalizer';
 
 @Injectable()
 export class UpdateMaintenanceLogUseCase {
@@ -48,7 +49,11 @@ export class UpdateMaintenanceLogUseCase {
       description: input.description,
       partsCost: input.partsCost,
       laborCost: input.laborCost,
-      partsBrand: input.partsBrand,
+      // undefined leaves the brand alone; blank or null clears it.
+      partsBrand:
+        input.partsBrand === undefined
+          ? undefined
+          : normalizeBrand(input.partsBrand),
       serviceDate,
     });
 
