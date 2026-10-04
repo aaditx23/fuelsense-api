@@ -22,6 +22,8 @@
     "debug": "nest start --debug --watch",
     "prod": "node dist/main",
     "seed:admin": "ts-node scripts/seed-admin.ts",
+    "seed:bikes": "ts-node scripts/seed-bikes.ts",
+    "seed:bike-images": "ts-node scripts/seed-bike-images.ts",
     "backfill:mileage": "ts-node scripts/backfill-mileage.ts"
   },
   "dependencies": {
