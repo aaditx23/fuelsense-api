@@ -16,3 +16,10 @@ export type FuelPriceSummary = {
   petrolAvg: number | null;
   octaneAvg: number | null;
 };
+
+export type FuelTypeName = 'PETROL' | 'DIESEL' | 'OCTANE';
+
+export type FuelPriceHistoryPoint = {
+  effectiveDate: Date;
+  price: number;
+};

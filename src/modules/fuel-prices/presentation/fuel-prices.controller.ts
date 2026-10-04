@@ -1,8 +1,10 @@
-import { Controller, Get, Post } from '@nestjs/common';
+import { Controller, Get, Post, Query } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { GetAllFuelPriceUseCase } from '../application/use-cases/get-all-fuel-price.use-case';
 import { GetDailyFuelPriceUseCase } from '../application/use-cases/get-daily-fuel-price.use-case';
+import { GetFuelPriceHistoryUseCase } from '../application/use-cases/get-fuel-price-history.use-case';
 import { GetFuelSummaryUseCase } from '../application/use-cases/get-fuel-summary.use-case';
+import { FuelPriceHistoryQueryDto } from './dto/fuel-price-history-query.dto';
 import { ManualFuelUpdateUseCase } from '../application/use-cases/manual-fuel-update.use-case';
 
 @ApiTags('fuel-price')
@@ -12,6 +14,7 @@ export class FuelPricesController {
     private readonly getDailyFuelPriceUseCase: GetDailyFuelPriceUseCase,
     private readonly getFuelSummaryUseCase: GetFuelSummaryUseCase,
     private readonly getAllFuelPriceUseCase: GetAllFuelPriceUseCase,
+    private readonly getFuelPriceHistoryUseCase: GetFuelPriceHistoryUseCase,
     private readonly manualFuelUpdateUseCase: ManualFuelUpdateUseCase,
   ) {}
 
@@ -34,6 +37,16 @@ export class FuelPricesController {
   @Get('all-fuel-data')
   getAllFuelData() {
     return this.getAllFuelPriceUseCase.execute();
+  }
+
+  @ApiOperation({
+    summary: 'Get Fuel Price History',
+    description: 'Prices of one fuel type over the last N days, oldest first.',
+  })
+  @ApiOkResponse({ description: 'Successful Response' })
+  @Get('fuel-prices/history')
+  getFuelPriceHistory(@Query() query: FuelPriceHistoryQueryDto) {
+    return this.getFuelPriceHistoryUseCase.execute(query.fuelType, query.days);
   }
 
   @ApiOperation({ summary: 'Trigger Manual Fuel Update', description: 'Trigger manual fuel scraping and persistence.' })

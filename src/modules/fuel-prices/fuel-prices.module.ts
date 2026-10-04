@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { GetAllFuelPriceUseCase } from './application/use-cases/get-all-fuel-price.use-case';
+import { GetFuelPriceHistoryUseCase } from './application/use-cases/get-fuel-price-history.use-case';
 import { GetDailyFuelPriceUseCase } from './application/use-cases/get-daily-fuel-price.use-case';
 import { GetFuelSummaryUseCase } from './application/use-cases/get-fuel-summary.use-case';
 import { ManualFuelUpdateUseCase } from './application/use-cases/manual-fuel-update.use-case';
@@ -17,6 +18,7 @@ import { FuelPricesController } from './presentation/fuel-prices.controller';
     GetDailyFuelPriceUseCase,
     GetFuelSummaryUseCase,
     GetAllFuelPriceUseCase,
+    GetFuelPriceHistoryUseCase,
     ManualFuelUpdateUseCase,
     FuelPriceScraperService,
     {

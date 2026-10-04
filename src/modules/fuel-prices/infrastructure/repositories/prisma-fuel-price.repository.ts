@@ -3,7 +3,9 @@ import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../../shared/infrastructure/prisma/prisma.service';
 import {
   FuelPriceEntity,
+  FuelPriceHistoryPoint,
   FuelPriceSummary,
+  FuelTypeName,
 } from '../../domain/entities/fuel-price.entity';
 import { FuelPriceRepository } from '../../domain/repositories/fuel-price.repository';
 
@@ -105,6 +107,17 @@ export class PrismaFuelPriceRepository implements FuelPriceRepository {
     }
 
     return entities;
+  }
+
+  async findHistory(
+    fuelType: FuelTypeName,
+    since: Date,
+  ): Promise<FuelPriceHistoryPoint[]> {
+    return this.prisma.fuelPrice.findMany({
+      where: { fuelType, effectiveDate: { gte: since } },
+      orderBy: { effectiveDate: 'asc' },
+      select: { effectiveDate: true, price: true },
+    });
   }
 
   async getSummary(): Promise<FuelPriceSummary> {
