@@ -30,10 +30,11 @@ describe('FuelPriceScraperService', () => {
 
     const result = await service.scrape();
 
+    const effectiveDate = new Date('2026-06-01T00:00:00.000Z');
     expect(result).toEqual({
-      diesel: 115,
-      petrol: 140,
-      octane: 145,
+      diesel: { price: 115, effectiveDate },
+      petrol: { price: 140, effectiveDate },
+      octane: { price: 145, effectiveDate },
     });
   });
 });
