@@ -5,6 +5,7 @@ import { DeleteMaintenanceLogUseCase } from './application/use-cases/delete-main
 import { UpdateMaintenanceLogUseCase } from './application/use-cases/update-maintenance-log.use-case';
 import { GetMaintenanceLogsUseCase } from './application/use-cases/get-maintenance-logs.use-case';
 import { GetBikeAnalyticsUseCase } from './application/use-cases/get-bike-analytics.use-case';
+import { GetBrandSuggestionsUseCase } from './application/use-cases/get-brand-suggestions.use-case';
 import { GetRegisteredPartsUseCase } from './application/use-cases/get-registered-parts.use-case';
 import { MAINTENANCE_REPOSITORY } from './domain/repositories/maintenance.repository';
 import { PrismaMaintenanceRepository } from './infrastructure/repositories/prisma-maintenance.repository';
@@ -20,6 +21,7 @@ import { MaintenanceController } from './presentation/maintenance.controller';
     GetMaintenanceLogsUseCase,
     GetBikeAnalyticsUseCase,
     GetRegisteredPartsUseCase,
+    GetBrandSuggestionsUseCase,
     {
       provide: MAINTENANCE_REPOSITORY,
       useClass: PrismaMaintenanceRepository,

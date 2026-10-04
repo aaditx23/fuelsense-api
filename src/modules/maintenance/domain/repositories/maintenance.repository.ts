@@ -37,4 +37,6 @@ export interface MaintenanceRepository {
   getBikeModelUserBikes(bikeId: number): Promise<{ id: number; userId: number; createdAt: Date }[]>;
   getBikeModelMileageTotals(bikeId: number): Promise<MileageTotals[]>;
   getRegisteredParts(): Promise<string[]>;
+  /** Brands riders have logged at least twice, most used first. */
+  getUsedBrands(limit: number): Promise<string[]>;
 }

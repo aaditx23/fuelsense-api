@@ -171,4 +171,17 @@ export class PrismaMaintenanceRepository implements MaintenanceRepository {
     const defaults = ['ENGINE_OIL', 'SPARK_PLUG', 'BRAKE_PADS'];
     return [...new Set([...defaults, ...dbParts])].sort();
   }
+
+  async getUsedBrands(limit: number): Promise<string[]> {
+    const rows = await this.prisma.maintenanceRecord.groupBy({
+      by: ['partsBrand'],
+      where: { partsBrand: { not: null } },
+      _count: { partsBrand: true },
+      having: { partsBrand: { _count: { gte: 2 } } },
+      orderBy: { _count: { partsBrand: 'desc' } },
+      take: limit,
+    });
+
+    return rows.flatMap((row) => (row.partsBrand ? [row.partsBrand] : []));
+  }
 }

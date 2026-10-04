@@ -24,6 +24,7 @@ import { DeleteMaintenanceLogUseCase } from '../application/use-cases/delete-mai
 import { UpdateMaintenanceLogUseCase } from '../application/use-cases/update-maintenance-log.use-case';
 import { GetMaintenanceLogsUseCase } from '../application/use-cases/get-maintenance-logs.use-case';
 import { GetBikeAnalyticsUseCase } from '../application/use-cases/get-bike-analytics.use-case';
+import { GetBrandSuggestionsUseCase } from '../application/use-cases/get-brand-suggestions.use-case';
 import { GetRegisteredPartsUseCase } from '../application/use-cases/get-registered-parts.use-case';
 import { CreateMaintenanceDto } from './dto/create-maintenance.dto';
 import { UpdateMaintenanceDto } from './dto/update-maintenance.dto';
@@ -38,6 +39,7 @@ export class MaintenanceController {
     private readonly getMaintenanceLogsUseCase: GetMaintenanceLogsUseCase,
     private readonly getBikeAnalyticsUseCase: GetBikeAnalyticsUseCase,
     private readonly getRegisteredPartsUseCase: GetRegisteredPartsUseCase,
+    private readonly getBrandSuggestionsUseCase: GetBrandSuggestionsUseCase,
   ) {}
 
   @ApiOperation({ summary: 'Create Maintenance Log', description: 'Create a new maintenance log for the authenticated user.' })
@@ -99,5 +101,14 @@ export class MaintenanceController {
   @Get('api/v1/maintenance/parts')
   getParts() {
     return this.getRegisteredPartsUseCase.execute();
+  }
+
+  @ApiOperation({ summary: 'Get Brand Suggestions', description: 'Known part brands plus brands riders have logged more than once, for autocomplete.' })
+  @ApiBearerAuth('HTTPBearer')
+  @UseGuards(JwtAuthGuard)
+  @ApiOkResponse({ description: 'Successful Response' })
+  @Get('api/v1/maintenance/brands')
+  getBrands() {
+    return this.getBrandSuggestionsUseCase.execute();
   }
 }

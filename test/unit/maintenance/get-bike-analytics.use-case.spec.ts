@@ -17,6 +17,7 @@ describe('GetBikeAnalyticsUseCase', () => {
     getBikeModelUserBikes: jest.fn(),
     getBikeModelMileageTotals: jest.fn(),
     getRegisteredParts: jest.fn(),
+    getUsedBrands: jest.fn(),
   };
 
   beforeEach(async () => {
