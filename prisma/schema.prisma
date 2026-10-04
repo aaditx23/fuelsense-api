@@ -151,7 +151,8 @@ model BikeLeaderboardStat {
   bikeId                   Int      @map("bike_id")
   period                   String
   ownerCount               Int      @default(0) @map("owner_count")
-  costOwnerCount           Int      @default(0) @map("cost_owner_count")
+  runningOwnerCount        Int      @default(0) @map("running_owner_count")
+  maintenanceOwnerCount    Int      @default(0) @map("maintenance_owner_count")
   avgMileage               Float?   @map("avg_mileage")
   claimRatio               Float?   @map("claim_ratio")
   runningCostPerKm         Float?   @map("running_cost_per_km")
