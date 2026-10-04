@@ -6,6 +6,7 @@ import type {
   FuelPriceDetail,
   FuelPriceEntity,
 } from '../../../src/modules/fuel-prices/domain/entities/fuel-price.entity';
+import { PRICE_ALERT_NOTIFIER } from '../../../src/modules/fuel-prices/domain/services/price-alert-notifier';
 import { FUEL_PRICE_REPOSITORY } from '../../../src/modules/fuel-prices/domain/repositories/fuel-price.repository';
 import type { FuelPriceRepository } from '../../../src/modules/fuel-prices/domain/repositories/fuel-price.repository';
 
@@ -48,6 +49,11 @@ describe('ManualFuelUpdateUseCase', () => {
     scrape: jest.fn(),
   };
 
+  const notifierMock = {
+    notify: jest.fn(),
+    sendTest: jest.fn(),
+  };
+
   beforeEach(async () => {
     jest.resetAllMocks();
 
@@ -61,6 +67,10 @@ describe('ManualFuelUpdateUseCase', () => {
         {
           provide: FuelPriceScraperService,
           useValue: scraperMock,
+        },
+        {
+          provide: PRICE_ALERT_NOTIFIER,
+          useValue: notifierMock,
         },
       ],
     }).compile();
@@ -148,5 +158,70 @@ describe('ManualFuelUpdateUseCase', () => {
 
     expect(result.message).toBe('Fuel price updated successfully');
     expect(scraperMock.scrape).toHaveBeenCalled();
+  });
+
+  describe('price alerts', () => {
+    const olderThanCache = () => new Date(Date.now() - 7 * HOUR_MS);
+
+    it('tells the notifier which fuels moved', async () => {
+      repositoryMock.findLatest.mockResolvedValue(
+        entity({ diesel: 110, petrol: 130, octane: 140 }, olderThanCache()),
+      );
+      scraperMock.scrape.mockResolvedValue(
+        scraped({ diesel: 110, petrol: 133, octane: 140 }),
+      );
+      repositoryMock.saveIfChanged.mockResolvedValue({
+        inserted: true,
+        record: entity({ diesel: 110, petrol: 133, octane: 140 }),
+      });
+
+      await useCase.execute();
+
+      expect(notifierMock.notify).toHaveBeenCalledWith([
+        { fuelType: 'PETROL', oldPrice: 130, newPrice: 133 },
+      ]);
+    });
+
+    it('notifies nothing when no price moved', async () => {
+      repositoryMock.findLatest.mockResolvedValue(
+        entity({ diesel: 110, petrol: 130, octane: 140 }, olderThanCache()),
+      );
+      scraperMock.scrape.mockResolvedValue(
+        scraped({ diesel: 110, petrol: 130, octane: 140 }),
+      );
+      repositoryMock.saveIfChanged.mockResolvedValue({
+        inserted: false,
+        record: entity({ diesel: 110, petrol: 130, octane: 140 }),
+      });
+
+      await useCase.execute();
+
+      expect(notifierMock.notify).toHaveBeenCalledWith([]);
+    });
+
+    it('does not notify on the very first price ever stored', async () => {
+      repositoryMock.findLatest.mockResolvedValue(null);
+      scraperMock.scrape.mockResolvedValue(
+        scraped({ diesel: 110, petrol: 130, octane: 140 }),
+      );
+      repositoryMock.saveIfChanged.mockResolvedValue({
+        inserted: true,
+        record: entity({ diesel: 110, petrol: 130, octane: 140 }),
+      });
+
+      await useCase.execute();
+
+      expect(notifierMock.notify).toHaveBeenCalledWith([]);
+    });
+
+    it('does not notify when serving the cached price', async () => {
+      repositoryMock.findLatest.mockResolvedValue(
+        entity({ diesel: 110, petrol: 130, octane: 140 }),
+      );
+
+      await useCase.execute();
+
+      expect(notifierMock.notify).not.toHaveBeenCalled();
+    });
   });
 });
