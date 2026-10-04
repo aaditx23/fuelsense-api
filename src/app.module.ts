@@ -10,6 +10,7 @@ import { PrismaModule } from './modules/shared/infrastructure/prisma/prisma.modu
 import { UserModule } from './modules/user/user.module';
 import { MaintenanceModule } from './modules/maintenance/maintenance.module';
 import { CommunityModule } from './modules/community/community.module';
+import { LeaderboardModule } from './modules/leaderboard/leaderboard.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { CommunityModule } from './modules/community/community.module';
     FuelPricesModule,
     MaintenanceModule,
     CommunityModule,
+    LeaderboardModule,
   ],
   controllers: [HealthController],
   providers: [],
