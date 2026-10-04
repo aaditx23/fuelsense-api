@@ -30,16 +30,26 @@ export class CreateMaintenanceLogUseCase {
       throw new BadRequestException('Odometer reading cannot be negative');
     }
 
+    const category = input.category.trim();
+    if (!category) {
+      throw new BadRequestException('Category is required');
+    }
+
+    const serviceDate = input.serviceDate ? new Date(input.serviceDate) : undefined;
+    if (serviceDate && Number.isNaN(serviceDate.getTime())) {
+      throw new BadRequestException('serviceDate must be a valid date');
+    }
+
     const created = await this.maintenanceRepository.createMaintenanceRecord({
       userId,
       userBikeId: input.userBikeId,
       odometerReading: input.odometerReading,
-      category: input.category,
+      category,
       description: input.description,
       partsCost: input.partsCost,
       laborCost: input.laborCost,
       partsBrand: input.partsBrand,
-      serviceDate: input.serviceDate ? new Date(input.serviceDate) : undefined,
+      serviceDate,
     });
 
     return ok({

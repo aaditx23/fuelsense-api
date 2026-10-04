@@ -32,6 +32,11 @@ export class UpdateMaintenanceLogUseCase {
       throw new BadRequestException('serviceDate must be a valid date');
     }
 
+    const category = input.category?.trim();
+    if (input.category !== undefined && !category) {
+      throw new BadRequestException('Category cannot be empty');
+    }
+
     const existing = await this.maintenanceRepository.findOwnedRecord(userId, id);
     if (!existing) {
       throw new NotFoundException('Maintenance record not found');
@@ -39,7 +44,7 @@ export class UpdateMaintenanceLogUseCase {
 
     const updated = await this.maintenanceRepository.updateMaintenanceRecord(id, {
       odometerReading: input.odometerReading,
-      category: input.category,
+      category,
       description: input.description,
       partsCost: input.partsCost,
       laborCost: input.laborCost,

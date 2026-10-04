@@ -39,6 +39,6 @@ import { JwtStrategy } from './infrastructure/strategies/jwt.strategy';
       useClass: PrismaAuthRepository,
     },
   ],
-  exports: [AUTH_REPOSITORY, JwtModule],
+  exports: [AUTH_REPOSITORY, JwtModule, PasswordService],
 })
 export class AuthModule {}

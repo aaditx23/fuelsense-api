@@ -58,4 +58,26 @@ export class PrismaUserRepository implements UserRepository {
   async deleteById(userId: number): Promise<void> {
     await this.prisma.user.delete({ where: { id: userId } });
   }
+
+  async updateProfile(
+    userId: number,
+    data: { username?: string; email?: string; profileImage?: string | null },
+  ): Promise<void> {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        ...(data.username !== undefined && { username: data.username }),
+        ...(data.email !== undefined && { email: data.email }),
+        ...(data.profileImage !== undefined && { profileImage: data.profileImage }),
+      },
+    });
+  }
+
+  async updatePasswordHash(userId: number, passwordHash: string): Promise<void> {
+    await this.prisma.user.update({ where: { id: userId }, data: { passwordHash } });
+  }
+
+  async countAdmins(): Promise<number> {
+    return this.prisma.user.count({ where: { role: UserRole.ADMIN } });
+  }
 }
