@@ -58,6 +58,7 @@ model Bike {
   updatedAt        DateTime     @updatedAt @map("updated_at")
   submitter        User?        @relation("SubmittedBikes", fields: [submittedById], references: [id], onDelete: SetNull)
   userBikes        UserBike[]
+  leaderboardStats BikeLeaderboardStat[]
 
   @@unique([brand, model, engineCc, modelYear], map: "uq_bike_variant")
   @@map("bikes")
@@ -141,4 +142,24 @@ model Part {
   createdAt DateTime @default(now()) @map("created_at")
 
   @@map("parts")
+}
+
+/// Ranking figures per bike model and period, rebuilt nightly (see
+/// RebuildBikeLeaderboardUseCase). `period` is ALL or LAST_6M.
+model BikeLeaderboardStat {
+  id                       Int      @id @default(autoincrement())
+  bikeId                   Int      @map("bike_id")
+  period                   String
+  ownerCount               Int      @default(0) @map("owner_count")
+  costOwnerCount           Int      @default(0) @map("cost_owner_count")
+  avgMileage               Float?   @map("avg_mileage")
+  claimRatio               Float?   @map("claim_ratio")
+  runningCostPerKm         Float?   @map("running_cost_per_km")
+  maintenanceCostPer1000Km Float?   @map("maintenance_cost_per_1000km")
+  updatedAt                DateTime @default(now()) @map("updated_at")
+  bike                     Bike     @relation(fields: [bikeId], references: [id], onDelete: Cascade)
+
+  @@unique([bikeId, period], map: "uq_bike_leaderboard_bike_period")
+  @@index([period])
+  @@map("bike_leaderboard_stats")
 }
